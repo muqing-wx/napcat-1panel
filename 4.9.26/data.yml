@@ -8,7 +8,7 @@ additionalProperties:
       required: true
       type: text
     - default: 6099
-      edit: false
+      edit: true
       envKey: PANEL_APP_PORT_HTTP
       labelEn: NAPCAT_PORT
       labelZh: WebUI端口
@@ -57,45 +57,3 @@ additionalProperties:
       labelZh: NAPCAT组ID
       required: true
       type: number
-    - default: ./data
-      edit: true
-      envKey: CONFIG_PATH
-      labelEn: NapCat_config_path
-      labelZh: NapCat配置路径
-      required: true
-      type: text
-    - default: ./data/QQ
-      edit: true
-      envKey: QQ_PATH
-      labelEn: QQ_setting_path
-      labelZh: QQ配置路径
-      required: false
-      type: text
-    - default: ./data/log
-      edit: true
-      envKey: LOG_PATH
-      labelEn: NapCat_log_path
-      labelZh: NapCat日志路径
-      required: true
-      type: text
-    - default: ''
-      edit: true
-      envKey: ADDITIONAL_PATH1
-      labelEn: ADDITIONAL_PATH
-      labelZh: 需要添加的额外路径1
-      required: false
-      type: text
-    - default: ''
-      edit: true
-      envKey: ADDITIONAL_PATH2
-      labelEn: ADDITIONAL_PATH
-      labelZh: 需要添加的额外路径2
-      required: false
-      type: text
-    - default: ''
-      edit: true
-      envKey: ADDITIONAL_PATH3
-      labelEn: ADDITIONAL_PATH
-      labelZh: 需要添加的额外路径3
-      required: false
-      type: text

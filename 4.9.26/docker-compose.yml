@@ -1,21 +1,26 @@
 services:
     napcat:
-        image: docker.sakuno.top/mlikiowa/napcat-docker:latest
         container_name: ${CONTAINER_NAME}
-        restart: always
-        network_mode: "host"
-        mac_address: "${MAC_ADDRESS}"
-        privileged: true
+        deploy:
+            resources:
+                limits:
+                    cpus: ${CPUS}
+                    memory: ${MEMORY_LIMIT}
         environment:
-            - "TZ=Asia/Shanghai"
-            - "NAPCAT_UID=${NAPCAT_UID}"
-            - "NAPCAT_GID=${NAPCAT_GID}"
-        volumes:
-            - "${QQ_PATH}:/app/.config/QQ"
-            - "${CONFIG_PATH}:/app/napcat/config"
-            - "${LOG_PATH}:/app/napcat/logs"
-            - "${ADDITIONAL_PATH1:-/dev/null}:${ADDITIONAL_PATH1:-/app/zero}"
-            - "${ADDITIONAL_PATH2:-/dev/null}:${ADDITIONAL_PATH2:-/app/one}"
-            - "${ADDITIONAL_PATH3:-/dev/null}:${ADDITIONAL_PATH3:-/app/two}"
+            - TZ=Asia/Shanghai
+            - NAPCAT_UID=${NAPCAT_UID}
+            - NAPCAT_GID=${NAPCAT_GID}
+        image: mlikiowa/napcat-docker:latest
         labels:
-            createdBy: "Apps"
+            createdBy: Apps
+        mac_address: ${MAC_ADDRESS}
+        privileged: true
+        restart: always
+        ports:
+            - ${PANEL_APP_PORT_HTTP}:6099/tcp
+            - "3000-3001:3000-3001/tcp"
+        volumes:
+            - /opt/1panel/apps/napcat/data:/app/.config/QQ
+            - /opt/1panel/apps/napcat/config:/app/napcat/config
+            - /opt/1panel/apps/napcat/logs:/app/napcat/logs
+            - /opt/1panel/apps/astrbot/astrbot/data:/AstrBot/data
