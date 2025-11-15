@@ -1,26 +1,38 @@
 services:
     napcat:
+        # 容器名称，从 .env 文件读取
         container_name: ${CONTAINER_NAME}
         deploy:
             resources:
                 limits:
+                    # CPU 和内存限制，从 .env 文件读取
                     cpus: ${CPUS}
                     memory: ${MEMORY_LIMIT}
         environment:
+            # 设置时区为上海
             - TZ=Asia/Shanghai
+            # 设置容器内运行 napcat 进程的用户和组ID，实现权限对齐
             - NAPCAT_UID=${NAPCAT_UID}
             - NAPCAT_GID=${NAPCAT_GID}
+        # 使用的镜像
         image: mlikiowa/napcat-docker:latest
         labels:
             createdBy: Apps
+        # 核心：为容器指定一个固定的 MAC 地址，从 .env 文件读取
         mac_address: ${MAC_ADDRESS}
         privileged: true
         restart: always
         ports:
+            # 将容器的 6099 端口映射到主机指定端口
             - ${PANEL_APP_PORT_HTTP}:6099/tcp
+            # 映射其他可能需要的端口
             - "3000-3001:3000-3001/tcp"
         volumes:
-            - /opt/1panel/apps/napcat/data:/app/.config/QQ
-            - /opt/1panel/apps/napcat/config:/app/napcat/config
-            - /opt/1panel/apps/napcat/logs:/app/napcat/logs
-            - /opt/1panel/apps/astrbot/astrbot/data:/AstrBot/data
+            # 挂载 QQ 核心数据目录
+            - ./data:/app/.config/QQ
+            # 挂载 napcat 配置文件目录
+            - ./config:/app/napcat/config
+            # 挂载 napcat 日志目录
+            - ./logs:/app/napcat/logs
+            # 关键：动态挂载 AstrBot 数据目录，路径由 init.sh 脚本确定
+            - ${ASTROBOT_DATA_PATH}:/AstrBot/data
