@@ -1,47 +1,52 @@
 #!/bin/bash
 
-# 定义要搜索的根目录列表
+# --- 1. 动态路径搜索 ---
 SEARCH_ROOTS=("/opt" "/var" "/usr" "/home" "/root")
 ASTROBOT_DATA_SRC_DIR=""
-
-# 遍历列表，查找 'astrbot/data' 目录，找到第一个后立即停止
 for root in "${SEARCH_ROOTS[@]}"; do
-    if [ ! -d "$root" ]; then
-        continue
-    fi
-    
+    if [ ! -d "$root" ]; then continue; fi
     SEARCH_RESULT=$(find "$root" -type d -path '*/astrbot/data' 2>/dev/null | head -n 1)
-
     if [ -n "$SEARCH_RESULT" ]; then
         ASTROBOT_DATA_SRC_DIR="$SEARCH_RESULT"
         break
     fi
 done
 
-# 定义本地应用根目录和备用占位符目录
+# --- 2. 准备路径变量 ---
 HOST_APP_ROOT_DIR="."
-ASTROBOT_DATA_PLACEHOLDER_DIR="${HOST_APP_ROOT_DIR}/astrbot_data"
+ASTROBOT_DATA_PLACEHOLDER_DIR="${HOST_APP_ROOT_DIR}/astrbot_data_placeholder"
+FINAL_ASTROBOT_PATH=""
 
-# 如果成功找到目录，则使用其真实路径；否则，创建并使用本地占位符目录
 if [ -n "${ASTROBOT_DATA_SRC_DIR}" ]; then
-    export ASTROBOT_DATA_PATH="${ASTROBOT_DATA_SRC_DIR}"
+    FINAL_ASTROBOT_PATH="${ASTROBOT_DATA_SRC_DIR}"
 else
     mkdir -p "${ASTROBOT_DATA_PLACEHOLDER_DIR}"
-    export ASTROBOT_DATA_PATH="${ASTROBOT_DATA_PLACEHOLDER_DIR}"
+    FINAL_ASTROBOT_PATH="${ASTROBOT_DATA_PLACEHOLDER_DIR}"
 fi
 
-# 创建 Napcat 运行所需的基础目录
+# --- 3. 【核心修复】将动态路径写入 .env 文件 ---
+# 先删除 .env 文件中可能存在的旧行，防止重复
+if [ -f ./.env ]; then
+    sed -i '/^ASTROBOT_DATA_PATH=/d' ./.env
+fi
+# 将新的、正确的路径追加到 .env 文件末尾
+echo "ASTROBOT_DATA_PATH=${FINAL_ASTROBOT_PATH}" >> ./.env
+
+# --- 4. 创建应用所需目录 ---
 mkdir -p "${HOST_APP_ROOT_DIR}/data"
 mkdir -p "${HOST_APP_ROOT_DIR}/config"
 mkdir -p "${HOST_APP_ROOT_DIR}/logs"
 
-# 加载 .env 文件中的环境变量
-source ./.env
+# --- 5. 生成 webui.json 配置文件 ---
+# 确保 .env 文件存在并加载，以便获取 WEBUI_TOKEN 等变量
+if [ -f ./.env ]; then
+    source ./.env
+fi
 
-# 动态生成 webui.json 配置文件
 WEBUI_JSON_PATH="${HOST_APP_ROOT_DIR}/config/webui.json"
 rm -f "${WEBUI_JSON_PATH}"
 
+# 使用已加载的环境变量生成配置文件
 cat <<EOF > "${WEBUI_JSON_PATH}"
 {
     "host": "${WEBUI_HOST}",
